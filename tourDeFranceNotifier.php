@@ -260,8 +260,9 @@ foreach ($response['d'] as $key => $post)
         case 8:
           $event = ':point_right:';
           break;
+        // moyenne km/h
         case 9:
-          $event = '';
+          $event = ':signal_strength:';
           break;
         // sommet
         case 10:
@@ -317,8 +318,9 @@ foreach ($response['d'] as $key => $post)
         case 23:
           $event = ':muscle:';
           break;
+        // point sur les hommes de tête
         case 24:
-          $event = '';
+          $event = ':muscle:';
           break;
         // ascension
         case 25:
