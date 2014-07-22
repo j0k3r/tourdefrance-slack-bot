@@ -198,18 +198,7 @@ foreach ($response['d'] as $key => $post)
 
       if (isset($route[$stageNum]))
       {
-        $h = sprintf('%02d', floor($route[$stageNum]['startTime']/60));
-        $m = sprintf('%02d', floor($route[$stageNum]['startTime'] - 60*$h));
-
-        $date = $h.':'.$m;
-        if ('fr' == LANG)
-        {
-          $date = $h.'h'.$m;
-        }
-
-        $extra = $language[LANG][0].': '.$route[$stageNum]['type'].", ".
-          $language[LANG][1].': '.$route[$stageNum]['distance']." km, ".
-          $language[LANG][2].': '.$date;
+        $extra = $language[LANG][0].': '.$route[$stageNum]['type'].", ".$language[LANG][1].': '.$route[$stageNum]['distance']." km, ";
 
         postToSlack(':zap: '.$language[LANG][3].': *'.$route[$stageNum]['start'].' - '.$route[$stageNum]['finish'].'*', $extra);
       }
@@ -307,8 +296,9 @@ foreach ($response['d'] as $key => $post)
         case 20:
           $event = ':point_right:';
           break;
+        // point sur les derniers kilomètres
         case 21:
-          $event = '';
+          $event = ':point_right:';
           break;
         // point sur l'homme de tête
         case 22:
