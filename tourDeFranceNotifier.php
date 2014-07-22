@@ -198,7 +198,7 @@ foreach ($response['d'] as $key => $post)
 
       if (isset($route[$stageNum]))
       {
-        $extra = $language[LANG][0].': '.$route[$stageNum]['type'].", ".$language[LANG][1].': '.$route[$stageNum]['distance']." km, ";
+        $extra = $language[LANG][0].': '.$route[$stageNum]['type'].", ".$language[LANG][1].': '.$route[$stageNum]['distance']." km";
 
         postToSlack(':zap: '.$language[LANG][3].': *'.$route[$stageNum]['start'].' - '.$route[$stageNum]['finish'].'*', $extra);
       }
