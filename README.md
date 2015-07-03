@@ -1,6 +1,6 @@
 # Tour de France Slack Bot
 
-TourDeFranceBot will notify a Slack channel/group for every stage during the Tour de France 2014.
+TourDeFranceBot will notify a Slack channel/group for every stage during the Tour de France 2015.
 
 It uses the unofficial letour.fr json API (the one used for their mobile app iOS/Android).
 
