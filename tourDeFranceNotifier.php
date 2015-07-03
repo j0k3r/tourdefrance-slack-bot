@@ -122,7 +122,7 @@ function postToSlack($text, $attachments_text = '', $pretty = true)
   var_dump(getUrl($slackUrl));
 }
 
-$stageMaps = 'http://tdf2014.webgeoservices.com/mapviewers/%d/?format=embed&language=%s#/wgsportal/maps/%d/?format=node';
+$stageMaps = 'http://tdf2015.webgeoservices.com/mapviewers/%d/?format=embed&language=%s';
 $stageMapsTable = array(
   '0100' => array(489, 492, 486), // FR, other langs, 3rd param
   '0200' => array(496, 499, 493),
@@ -147,25 +147,28 @@ $stageMapsTable = array(
   '2100' => array(631, 632, 626),
 );
 
-$appState = json_decode(getUrl('http://www.letour.fr/useradgents/2014/json/appState.json'), true);
+$appState = json_decode(getUrl('http://www.letour.fr/useradgents/2015/json/appState.json'), true);
 
 if (!isset($appState['stage']))
 {
-  var_dump('appState not good');
-  die();
+  die('appState not good');
 }
 
 $stageNum = $appState['stage'];
 
+if (!$stageNum)
+{
+  die('No stageNum ?');
+}
+
 $dbFile = './tourDeFranceDB.json';
 
 $db = json_decode(file_get_contents($dbFile), true);
-$response = json_decode(getUrl('http://www.letour.fr/useradgents/2014/json/livenews'.$stageNum.'_'.LANG.'.json'), true);
+$response = json_decode(getUrl('http://www.letour.fr/useradgents/2015/json/livenews'.$stageNum.'_'.LANG.'.json'), true);
 
 if (!$response)
 {
-  // var_dump('feed not ready');
-  die();
+  die('Feed not ready');
 }
 
 if ($stageNum != $db['current_stage'])
@@ -176,8 +179,7 @@ if ($stageNum != $db['current_stage'])
 
 if (!isset($response['d']) || empty($response['d']))
 {
-  var_dump('d not good');
-  die();
+  die('d n is ot good');
 }
 
 foreach ($response['d'] as $key => $post)
@@ -190,11 +192,10 @@ foreach ($response['d'] as $key => $post)
       $url = sprintf(
         $stageMaps,
         $stageMapsTable[$stageNum][LANG == 'fr' ? 0 : 1],
-        LANG,
-        $stageMapsTable[$stageNum][2]
+        LANG
       );
 
-      $route = json_decode(getUrl('http://www.letour.fr/useradgents/2014/json/route.json'), true);
+      $route = json_decode(getUrl('http://www.letour.fr/useradgents/2015/json/route.'.$appState['jsonVersions']['route'].'.json'), true);
 
       if (isset($route[$stageNum]))
       {
@@ -205,7 +206,7 @@ foreach ($response['d'] as $key => $post)
 
       // this link will show up a green ugly image, so we don't "prettify" the url (3rd parameters)
       postToSlack(':earth_africa: '.$language[LANG][4].': '.$url, '', false);
-      postToSlack(':chart_with_upwards_trend: '.$language[LANG][5].': http://www.letour.fr/useradgents/2014/profiles/'.$stageNum.'.jpg');
+      postToSlack(':chart_with_upwards_trend: '.$language[LANG][5].': http://www.letour.fr/useradgents/2015/profiles/'.$stageNum.'.jpg');
     }
 
     $db['last_update'] = $post['s'];
