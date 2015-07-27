@@ -151,7 +151,7 @@ $appState = json_decode(getUrl('http://www.letour.fr/useradgents/2015/json/appSt
 
 if (!isset($appState['stage']))
 {
-  die('appState not good');
+  die('appState is not good');
 }
 
 $stageNum = $appState['stage'];
@@ -179,7 +179,7 @@ if ($stageNum != $db['current_stage'])
 
 if (!isset($response['d']) || empty($response['d']))
 {
-  die('d n is ot good');
+  die('d is not good');
 }
 
 foreach ($response['d'] as $key => $post)
