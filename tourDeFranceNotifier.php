@@ -20,7 +20,7 @@
  */
 
 // Slack stuff
-const SLACK_TOKEN      = 'XXXXXXXX';
+const SLACK_TOKEN      = 'XXXXXXXXXXXXXXXXXXXXXXXXXX';
 const SLACK_CHANNEL    = '#tour-de-france';
 const SLACK_BOT_NAME   = 'Tour de France';
 const SLACK_BOT_AVATAR = 'http://i.imgur.com/WsjMcFw.png';
@@ -30,13 +30,13 @@ const PROXY         = false;
 const PROXY_USERPWD = false;
 
 // Set the language for updates. Available: de, en, es, fr
-const LANG = 'en';
-const DB = '/tmp/tourDeFranceDB.json';
+const LANG = 'fr';
+const DB = './tourDeFranceDB.json';
 
 const YEAR = 2016;
 
 const OUTPUT = 'slack'; //[ debug (print to console by not send to slack) | slack ]
-const DEBUG_MESSAGE_START = '-1'; // reset the "last message" so that there is something to show on every run
+
 
 /**
  * Below this line, you should modify at your own risk
@@ -60,20 +60,23 @@ $language = array(
   ),
 );
 
-function getUnpaddedStageNumber($stageNum) {
+function getUnpaddedStageNumber($stageNum)
+{
   return preg_replace('/^0/', '', $stageNum);
 }
 
-function generateProfileImageUrl($stageNum) {
+function generateProfileImageUrl($stageNum)
+{
   return 'http://www.letour.fr/PHOTOS/TDF/'.YEAR.'/'.getUnpaddedStageNumber($stageNum).'/PROFIL.png';
 }
 
-function generateMapImageUrl($stageNum) {
-  return 'http://www.letour.fr/PHOTOS/TDF/'.YEAR.'/'.getUnpaddedStageNumber($stageNum).'/CARTE.jpg'; 
+function generateMapImageUrl($stageNum)
+{
+  return 'http://www.letour.fr/PHOTOS/TDF/'.YEAR.'/'.getUnpaddedStageNumber($stageNum).'/CARTE.jpg';
 }
 
-function getUrl($url) {
-
+function getUrl($url)
+{
   $ch = curl_init($url);
   $options = array(
     CURLOPT_HEADER => 0,
@@ -83,11 +86,13 @@ function getUrl($url) {
     CURLOPT_SSL_VERIFYPEER => false,
   );
 
-  if (PROXY) {
+  if (PROXY)
+  {
     $options[CURLOPT_PROXY] = PROXY;
   }
 
-  if (PROXY_USERPWD) {
+  if (PROXY_USERPWD)
+  {
     $options[CURLOPT_PROXYUSERPWD] = PROXY_USERPWD;
   }
 
@@ -97,12 +102,14 @@ function getUrl($url) {
 
   $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-  if (200 !== $httpcode) {
+  if (200 !== $httpcode)
+  {
     curl_close($ch);
     return false;
   }
 
-  if ($response !== false) {
+  if ($response !== false)
+  {
     curl_close($ch);
     return $response;
   }
@@ -112,14 +119,22 @@ function getUrl($url) {
   die();
 }
 
-function postMessage($title, $attachments_text = '', $emoji = '', $pretty = true) {
-  if ($emoji != '') {
+function postMessage($title, $attachments_text = '', $emoji = '', $pretty = true)
+{
+  if ($emoji != '')
+  {
     $title = $emoji . ' ' . $title;
   }
 
-  if ( OUTPUT == 'debug' ) {
-    printf($title . "\n");
-  } elseif ( OUTPUT == 'slack') {
+  if (OUTPUT == 'debug')
+  {
+    var_dump(array(
+      'title' => $title,
+      'attachments_text' => $attachments_text,
+    ));
+  }
+  elseif (OUTPUT == 'slack')
+  {
     postToSlack($title, $attachments_text, $pretty);
   }
 }
@@ -135,35 +150,33 @@ function postToSlack($text, $attachments_text = '', $pretty = true)
     '&icon_url='.SLACK_BOT_AVATAR.
     '&text='.urlencode($text);
 
-  if ($pretty) {
+  if ($pretty)
+  {
     $slackUrl .= '&unfurl_links=1&parse=full&pretty=1';
   }
 
-  if ($attachments_text) {
+  if ($attachments_text)
+  {
     $slackUrl .= '&attachments='.urlencode('[{"text": "'.$attachments_text.'"}]');
-    //$slackUrl .= '&attachments='.urlencode('[{"text": "'.'"}]');
   }
 
   var_dump(getUrl($slackUrl));
-
 }
 
-function doWeCareAboutThisEvent($eventId){
-	$ignored_events = array(
-		42, // Microphone, interviews
-		43, // Diverse stats
-		44, // History
-		45, // Birthdays!
-	);
-	
-	if (in_array($eventId, $ignored_events)){
-		return False;
-	} else {
-		return True;
-	}
+function doWeCareAboutThisEvent($eventId)
+{
+  $ignored_events = array(
+    42, // Microphone, interviews
+    43, // Diverse stats
+    44, // History
+    45, // Birthdays!
+  );
+
+  return !in_array($eventId, $ignored_events);
 }
 
-function getEmojiForEventType($eventType) {
+function getEmojiForEventType($eventType)
+{
   $emojiLookup = array(
     0   => '', // rien
     1   => ':hospital:', //accident
@@ -215,94 +228,105 @@ function getEmojiForEventType($eventType) {
     48  => ''
   );
 
-  return $emojiLookup[$eventType];
+  return isset($emojiLookup[$eventType]) ? $emojiLookup[$eventType] : '';
 }
 
-function generateDistanceString($km) {
+function generateDistanceString($km)
+{
   $miles = round($km * 0.62137);
   return $km . 'km / ' . $miles . 'mi';
 }
 
-function main() {
-  global $language;
+$appState = json_decode(getUrl('http://www.letour.fr/useradgents/'.YEAR.'/json/appState.json'), true);
 
-  print("running\n");
+if (!isset($appState['stage']))
+{
+  die('appState is not good');
+}
 
-  $appState = json_decode(getUrl('http://www.letour.fr/useradgents/'.YEAR.'/json/appState.json'), true);
+$stageNum = $appState['stage'];
 
-  if (!isset($appState['stage'])) {
-    die('appState is not good');
-  }
+if (!$stageNum)
+{
+  die('No stageNum ?');
+}
 
-  $stageNum = $appState['stage'];
+$dbFile = DB;
 
-  if (!$stageNum) {
-    die('No stageNum ?');
-  }
+if (!file_exists($dbFile))
+{
+  file_put_contents($dbFile, json_encode(array()));
+}
 
-  $dbFile = DB;
+$db = json_decode(file_get_contents($dbFile), true);
+$response = json_decode(getUrl('http://www.letour.fr/useradgents/'.YEAR.'/json/livenews'.$stageNum.'_'.LANG.'.json'), true);
 
-  $db = json_decode(file_get_contents($dbFile), true);
-  $response = json_decode(getUrl('http://www.letour.fr/useradgents/'.YEAR.'/json/livenews'.$stageNum.'_'.LANG.'.json'), true);
+if (!$response)
+{
+  die('Feed not ready');
+}
 
-  if (!$response) {
-    die('Feed not ready');
-  }
+if (!isset($db['current_stage']) || $stageNum != $db['current_stage'])
+{
+  $db['current_stage'] = $stageNum;
+  $db['last_update'] = -1;
+}
 
-  if ($stageNum != $db['current_stage']) {
-    $db['current_stage'] = $stageNum;
-    $db['last_update'] = -1;
-  } 
+if (!isset($response['d']) || empty($response['d']))
+{
+  die('d is not good');
+}
 
-  if (!isset($response['d']) || empty($response['d'])) {
-    die('d is not good');
-  }
+foreach ($response['d'] as $key => $post)
+{
+  if ($post['s'] > $db['last_update'])
+  {
+    // on first key we post some stats about the stage
+    if (0 == $key)
+    {
+      $route = json_decode(getUrl('http://www.letour.fr/useradgents/'.YEAR.'/json/route.'.$appState['jsonVersions']['route'].'.json'), true);
 
-  foreach ($response['d'] as $key => $post) {
-    if ($post['s'] > $db['last_update']) {
-      // on first key we post some stats about the stage
-      if (0 == $key) {
-        $route = json_decode(getUrl('http://www.letour.fr/useradgents/'.YEAR.'/json/route.'.$appState['jsonVersions']['route'].'.json'), true);
+      if (isset($route[$stageNum]))
+      {
+        $extra = $language[LANG][0].': '.$route[$stageNum]['type'].", ".$language[LANG][1].': ' . generateDistanceString($route[$stageNum]['distance']);
 
-        if (isset($route[$stageNum])) {
-          $extra = $language[LANG][0].': '.$route[$stageNum]['type'].", ".$language[LANG][1].': ' . generateDistanceString($route[$stageNum]['distance']);
-
-          postMessage(':zap: '.$language[LANG][3].': *'.$route[$stageNum]['start'].' - '.$route[$stageNum]['finish'].'*', $extra);
-        }
-
-        postMessage(':earth_africa: '.$language[LANG][4].': '.generateMapImageUrl($stageNum), '', false);
-        postMessage(':chart_with_upwards_trend: '.$language[LANG][5].': '.generateProfileImageUrl($stageNum));
-      } 
-
-      $db['last_update'] = $post['s'];
-
-      $emoji = '';
-      
-      if (isset($post['e'])) {
-        $emoji = getEmojiForEventType($post['e']);
+        postMessage(':zap: '.$language[LANG][3].': *'.$route[$stageNum]['start'].' - '.$route[$stageNum]['finish'].'*', $extra);
       }
 
-      $h = sprintf('%02d', floor($post['s']/3600));
-      $m = sprintf('%02d', floor(($post['s'] - 3600*$h) / 60));
+      postMessage(':earth_africa: '.$language[LANG][4].': '.generateMapImageUrl($stageNum), '', false);
+      postMessage(':chart_with_upwards_trend: '.$language[LANG][5].': '.generateProfileImageUrl($stageNum));
+    }
 
-      $date = $h.':'.$m;
-      
-      if ('fr' == LANG) {
-        $date = $h.'h'.$m;
-      }
-      if (doWeCareAboutThisEvent($post['e'])){
-	      postMessage($post['t'].' – _'.$date.'_', $post['b'], $emoji);
-	  }
+    $db['last_update'] = $post['s'];
+
+    $emoji = '';
+
+    if (isset($post['e']))
+    {
+      $emoji = getEmojiForEventType($post['e']);
+    }
+
+    $h = sprintf('%02d', floor($post['s']/3600));
+    $m = sprintf('%02d', floor(($post['s'] - 3600*$h) / 60));
+
+    $date = $h.':'.$m;
+
+    if ('fr' == LANG)
+    {
+      $date = $h.'h'.$m;
+    }
+
+    if (isset($post['e']) && doWeCareAboutThisEvent($post['e']))
+    {
+      postMessage($post['t'].' – _'.$date.'_', $post['b'], $emoji);
     }
   }
-
-  if (OUTPUT == 'debug') {
-    $db['last_update'] = DEBUG_MESSAGE_START;
-  }
-
-  file_put_contents($dbFile, json_encode($db));
 }
 
-if ($argv && $argv[0] && realpath($argv[0]) === __FILE__) {
-  main();
+if (OUTPUT == 'debug')
+{
+  // reset the "last message" so that there is something to show on every run
+  $db['last_update'] = -1;
 }
+
+file_put_contents($dbFile, json_encode($db));
