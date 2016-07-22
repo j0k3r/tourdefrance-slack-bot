@@ -1,6 +1,6 @@
 # Tour de France Slack Bot
 
-TourDeFranceBot will notify a Slack channel/group for every stage during the Tour de France 2015.
+TourDeFranceBot will notify a Slack channel/group for every stage during the Tour de France 2016.
 
 It uses the unofficial letour.fr json API (the one used for their mobile app iOS/Android).
 
@@ -10,7 +10,7 @@ It will post a message :
 
 ### Preview
 
-Here is a preview of the Le Touquet-Paris-Plage - Lille Métropole stage.
+Here is a preview of the Le Touquet-Paris-Plage - Lille Métropole stage (from 2014).
 
 ![tourdefrance-slack-bot sample1](http://i.imgur.com/XV0SCTW.png)
 
